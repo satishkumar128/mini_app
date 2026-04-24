@@ -1,0 +1,2143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fockus Mockus</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: rgba(255,255,255,0.08);
+    --accent: #ff4d6d;
+    --accent2: #7c3aed;
+    --accent3: #06d6a0;
+    --text: #f0f0f8;
+    --muted: #6b6b8a;
+    --warning: #ffd60a;
+    --radius: 14px;
+    --font-head: 'Syne', sans-serif;
+    --font-mono: 'Space Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* NOISE TEXTURE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.5;
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--accent2); border-radius: 4px; }
+
+  /* SCREENS */
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* LANDING */
+  #screen-landing {
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .landing-glow {
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(124,58,237,0.15) 0%, transparent 70%);
+    top: -200px; left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .landing-glow2 {
+    position: absolute;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,77,109,0.12) 0%, transparent 70%);
+    bottom: -100px; right: -100px;
+    pointer-events: none;
+  }
+
+  .logo-wrap {
+    text-align: center;
+    margin-bottom: 3rem;
+    position: relative;
+  }
+
+  .logo-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 30px;
+    margin-bottom: 1.2rem;
+  }
+
+  h1.logo {
+    font-family: var(--font-head);
+    font-size: clamp(3rem, 10vw, 6rem);
+    font-weight: 800;
+    line-height: 0.9;
+    letter-spacing: -3px;
+    background: linear-gradient(135deg, #fff 0%, #a78bfa 50%, #ff4d6d 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .logo-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 0.8rem;
+    letter-spacing: 1px;
+  }
+
+  .landing-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 420px;
+    position: relative;
+  }
+
+  .landing-card h2 {
+    font-family: var(--font-head);
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-size: 11px;
+  }
+
+  .input-group {
+    margin-bottom: 1rem;
+  }
+
+  .input-group label {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .input-group input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .input-group input:focus {
+    border-color: var(--accent2);
+  }
+
+  .input-group input::placeholder { color: var(--muted); }
+
+  .btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+
+  .btn:active { transform: scale(0.97); }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white;
+  }
+
+  .btn-primary:hover { opacity: 0.9; }
+
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    margin-top: 10px;
+  }
+
+  .btn-secondary:hover { border-color: var(--accent3); }
+
+  .divider {
+    text-align: center;
+    color: var(--muted);
+    font-size: 11px;
+    margin: 1rem 0;
+    position: relative;
+  }
+
+  .divider::before, .divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 35%;
+    height: 1px;
+    background: var(--border);
+  }
+  .divider::before { left: 0; }
+  .divider::after { right: 0; }
+
+  /* FEATURES STRIP */
+  .features {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 420px;
+  }
+
+  .feature-pill {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    padding: 8px 16px;
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .feature-pill span { font-size: 16px; }
+
+  /* APP LAYOUT */
+  #screen-app {
+    flex-direction: column;
+  }
+
+  .app-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .app-header .logo-small {
+    font-family: var(--font-head);
+    font-weight: 800;
+    font-size: 1.3rem;
+    background: linear-gradient(135deg, #fff, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .room-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .room-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent3);
+    letter-spacing: 1px;
+  }
+
+  .online-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent3);
+    animation: pulse-dot 2s infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .app-body {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    grid-template-rows: auto;
+    gap: 0;
+    height: calc(100vh - 65px);
+    overflow: hidden;
+  }
+
+  /* MAIN AREA */
+  .main-area {
+    padding: 2rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  /* TIMER */
+  .timer-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .timer-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(124,58,237,0.1) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .timer-label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+
+  .timer-display {
+    font-family: var(--font-head);
+    font-size: clamp(2.5rem, 7vw, 4rem);
+    font-weight: 800;
+    letter-spacing: -2px;
+    line-height: 1;
+    position: relative;
+  }
+
+  .timer-display.running { color: var(--accent3); }
+  .timer-display.paused { color: var(--warning); }
+  .timer-display.idle { color: var(--text); }
+  .timer-display.danger { color: var(--accent); animation: flash-timer 0.5s infinite; }
+
+  @keyframes flash-timer {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .timer-ring-wrap {
+    position: relative;
+    display: inline-block;
+    margin: 1rem 0;
+  }
+
+  .timer-ring {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    margin: 0 auto;
+  }
+
+  .timer-ring svg {
+    position: absolute;
+    top: 0; left: 0;
+    transform: rotate(-90deg);
+  }
+
+  .timer-ring-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  .timer-controls {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .btn-timer {
+    padding: 12px 28px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+
+  .btn-timer:active { transform: scale(0.96); }
+
+  .btn-timer.start { background: var(--accent3); color: #000; border-color: var(--accent3); }
+  .btn-timer.pause { background: var(--warning); color: #000; border-color: var(--warning); }
+  .btn-timer.stop { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .timer-setup {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .timer-preset {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 12px;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: var(--font-mono);
+    transition: all 0.2s;
+  }
+
+  .timer-preset:hover, .timer-preset.active {
+    border-color: var(--accent2);
+    color: var(--text);
+  }
+
+  /* PUNISHMENTS */
+  .section-title {
+    font-family: var(--font-head);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+
+  .section-title .badge {
+    background: var(--accent);
+    color: white;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-family: var(--font-mono);
+  }
+
+  .punishments-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+
+  .punishment-chip {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    transition: all 0.2s;
+  }
+
+  .punishment-chip:hover { border-color: var(--accent); }
+
+  .punishment-chip .del-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.2s;
+  }
+
+  .punishment-chip .del-btn:hover { color: var(--accent); }
+
+  .add-punishment {
+    display: flex;
+    gap: 10px;
+  }
+
+  .add-punishment input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .add-punishment input:focus { border-color: var(--accent2); }
+  .add-punishment input::placeholder { color: var(--muted); }
+
+  .btn-add {
+    background: var(--accent2);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-add:hover { opacity: 0.85; }
+  .btn-add:active { transform: scale(0.96); }
+  .btn-add:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* SIDEBAR */
+  .sidebar {
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  .sidebar-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-tab {
+    flex: 1;
+    padding: 14px;
+    text-align: center;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    font-family: var(--font-mono);
+  }
+
+  .sidebar-tab.active {
+    color: var(--text);
+    border-bottom-color: var(--accent);
+  }
+
+  .sidebar-panel { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+  .sidebar-panel.active { display: flex; }
+
+  /* CHAT */
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .chat-msg {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    animation: slideUp 0.2s ease;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .chat-msg.mine { flex-direction: row-reverse; }
+
+  .chat-avatar {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    font-family: var(--font-head);
+  }
+
+  .chat-bubble {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    border-top-left-radius: 3px;
+    padding: 8px 12px;
+    font-size: 12px;
+    max-width: 210px;
+    word-break: break-word;
+    line-height: 1.5;
+  }
+
+  .chat-msg.mine .chat-bubble {
+    background: var(--accent2);
+    border-color: var(--accent2);
+    border-top-right-radius: 3px;
+    border-top-left-radius: 10px;
+  }
+
+  .chat-sender {
+    font-size: 10px;
+    color: var(--muted);
+    margin-bottom: 3px;
+    font-family: var(--font-mono);
+  }
+
+  .chat-msg.mine .chat-sender { text-align: right; }
+
+  .chat-msg.system .chat-bubble {
+    background: transparent;
+    border: 1px dashed var(--border);
+    color: var(--muted);
+    font-size: 11px;
+    max-width: 100%;
+    text-align: center;
+    border-radius: 8px;
+  }
+
+  .chat-msg.system { justify-content: center; }
+
+  .chat-input-wrap {
+    padding: 1rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+  }
+
+  .chat-input-wrap input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .chat-input-wrap input:focus { border-color: var(--accent2); }
+  .chat-input-wrap input::placeholder { color: var(--muted); }
+
+  .btn-send {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s;
+  }
+
+  .btn-send:hover { opacity: 0.85; }
+  .btn-send:active { transform: scale(0.94); }
+
+  /* LEADERBOARD */
+  .leaderboard {
+    padding: 1rem;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .lb-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    animation: slideUp 0.3s ease;
+    transition: all 0.3s;
+  }
+
+  .lb-row.highlighted { border-color: var(--accent); background: rgba(255,77,109,0.08); }
+
+  .lb-rank {
+    font-family: var(--font-head);
+    font-weight: 800;
+    font-size: 1.1rem;
+    width: 28px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .lb-rank.gold { color: #ffd700; }
+  .lb-rank.silver { color: #c0c0c0; }
+  .lb-rank.bronze { color: #cd7f32; }
+
+  .lb-avatar {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+    font-family: var(--font-head);
+  }
+
+  .lb-name {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .lb-you { font-size: 10px; color: var(--accent3); margin-left: 4px; }
+
+  .lb-fails {
+    font-family: var(--font-head);
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--accent);
+  }
+
+  .lb-fails-label {
+    font-size: 9px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* PUNISHMENT WHEEL MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 500;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(6px);
+  }
+
+  .modal-overlay.active { display: flex; }
+
+  .wheel-modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 2.5rem;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .wheel-modal::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(255,77,109,0.15) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .wheel-title {
+    font-family: var(--font-head);
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: var(--accent);
+  }
+
+  .wheel-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 2rem;
+    letter-spacing: 1px;
+  }
+
+  .wheel-canvas-wrap {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 1.5rem;
+  }
+
+  canvas#wheelCanvas {
+    border-radius: 50%;
+    display: block;
+  }
+
+  .wheel-pointer {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 24px solid var(--accent);
+    filter: drop-shadow(0 0 6px var(--accent));
+  }
+
+  .wheel-result {
+    background: var(--surface2);
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    font-family: var(--font-head);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* DISTRACTION ALERT */
+  .distraction-alert {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    background: var(--accent);
+    color: white;
+    text-align: center;
+    padding: 12px;
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 14px;
+    z-index: 600;
+    transform: translateY(-100%);
+    transition: transform 0.3s;
+    letter-spacing: 1px;
+  }
+
+  .distraction-alert.show { transform: translateY(0); }
+
+  /* STATS ROW */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.2rem;
+    text-align: center;
+  }
+
+  .stat-value {
+    font-family: var(--font-head);
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  /* SESSION LOCKED BANNER */
+  .locked-banner {
+    background: rgba(255,214,10,0.08);
+    border: 1px solid rgba(255,214,10,0.3);
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 12px;
+    color: var(--warning);
+    display: none;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .locked-banner.active { display: flex; }
+
+  /* AVATAR COLORS */
+  .av-1 { background: rgba(124,58,237,0.25); color: #a78bfa; }
+  .av-2 { background: rgba(255,77,109,0.25); color: #ff4d6d; }
+  .av-3 { background: rgba(6,214,160,0.25); color: #06d6a0; }
+  .av-4 { background: rgba(255,214,10,0.25); color: #ffd60a; }
+  .av-5 { background: rgba(59,130,246,0.25); color: #60a5fa; }
+
+  /* USERS ONLINE */
+  .users-online {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .user-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .user-chip .user-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent3);
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 700px) {
+    .app-body {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto;
+      height: auto;
+      overflow: visible;
+    }
+
+    .sidebar {
+      border-left: none;
+      border-top: 1px solid var(--border);
+      height: 50vh;
+    }
+  }
+
+  /* ANIMATIONS */
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .spinning { animation: spin 0.6s linear infinite; }
+
+  .shake {
+    animation: shake 0.4s ease;
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-5px); }
+    80% { transform: translateX(5px); }
+  }
+
+  /* CONFETTI CANVAS */
+  #confettiCanvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 900;
+  }
+
+  /* CUSTOM DURATION INPUT */
+  .custom-duration-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .custom-duration-wrap input {
+    width: 60px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 10px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    outline: none;
+    text-align: center;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.8;
+  }
+
+  .empty-state .icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  /* CARD SECTION */
+  .card-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 1.5rem;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="confettiCanvas"></canvas>
+
+<!-- DISTRACTION ALERT -->
+<div class="distraction-alert" id="distractionAlert">
+  ⚠️ DISTRACTION DETECTED — SPIN THE WHEEL!
+</div>
+
+<!-- LANDING SCREEN -->
+<div class="screen active" id="screen-landing">
+  <div class="landing-glow"></div>
+  <div class="landing-glow2"></div>
+
+  <div class="logo-wrap">
+    <div class="logo-badge">🎯 Gamified Focus</div>
+    <h1 class="logo">Fockus<br>Mockus</h1>
+    <p class="logo-sub">procrastination has consequences.</p>
+  </div>
+
+  <div class="landing-card">
+    <h2>Join or Create a Room</h2>
+
+    <div class="input-group">
+      <label>Your Name</label>
+      <input type="text" id="inputName" placeholder="e.g. ProcrastiNator99" maxlength="20">
+    </div>
+
+    <div class="input-group">
+      <label>Room ID</label>
+      <input type="text" id="inputRoom" placeholder="e.g. study-room-42" maxlength="24">
+    </div>
+
+    <button class="btn btn-primary" onclick="joinRoom()">Join Room →</button>
+
+    <div class="divider">or</div>
+
+    <button class="btn btn-secondary" onclick="createRoom()">Create New Room</button>
+  </div>
+
+  <div class="features">
+    <div class="feature-pill"><span>⏱</span> Focus Timer</div>
+    <div class="feature-pill"><span>💬</span> Live Chat</div>
+    <div class="feature-pill"><span>🎡</span> Punishment Wheel</div>
+    <div class="feature-pill"><span>🏆</span> Looser Board</div>
+  </div>
+</div>
+
+<!-- APP SCREEN -->
+<div class="screen" id="screen-app">
+  <!-- HEADER -->
+  <header class="app-header">
+    <div class="logo-small">Fockus Mockus</div>
+    <div class="room-info">
+      <div class="online-dot"></div>
+      <span id="onlineCount">1 online</span>
+      <div class="room-badge" id="roomBadge">ROOM-ID</div>
+      <button class="btn-timer" style="padding:6px 14px; font-size:12px; background:var(--accent3);" onclick="startVideoCall()">📹 Video</button>
+      <button class="btn-timer" style="padding:6px 14px; font-size:12px;" onclick="leaveRoom()">Leave</button>
+    </div>
+  </header>
+
+  <!-- VIDEO CALL OVERLAY -->
+  <div id="videoOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:9999; flex-direction:column; align-items:center; justify-content:center;">
+    <div style="color:var(--text); font-size:1.2rem; margin-bottom:16px; font-weight:700;">📹 Video Call — Room: <span id="videoRoomLabel"></span></div>
+    <iframe id="videoFrame" allow="camera; microphone; fullscreen; display-capture"
+      style="width:95vw; max-width:900px; height:65vh; border:none; border-radius:16px;"
+      src=""></iframe>
+    <button onclick="closeVideoCall()" style="margin-top:18px; padding:10px 30px; border-radius:20px; border:none; background:var(--accent); color:#fff; font-size:1rem; font-weight:700; cursor:pointer;">✕ Close Video</button>
+  </div>
+
+  <div class="app-body">
+    <!-- MAIN -->
+    <div class="main-area">
+
+      <!-- STATS -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-value" id="statFails" style="color: var(--accent);">0</div>
+          <div class="stat-label">My Fails</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statSessions" style="color: var(--accent3);">0</div>
+          <div class="stat-label">Sessions</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statFocus" style="color: var(--accent2);">0m</div>
+          <div class="stat-label">Focus Time</div>
+        </div>
+      </div>
+
+      <!-- TIMER CARD -->
+      <div class="timer-card">
+        <div class="timer-label" id="timerLabel">READY TO FOCUS</div>
+
+        <div class="timer-ring">
+          <svg width="200" height="200">
+            <circle cx="100" cy="100" r="88" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="10"/>
+            <circle id="timerArc" cx="100" cy="100" r="88" fill="none"
+              stroke="var(--accent2)" stroke-width="10"
+              stroke-dasharray="552.9" stroke-dashoffset="0"
+              stroke-linecap="round" style="transition: stroke-dashoffset 1s linear;"/>
+          </svg>
+          <div class="timer-ring-center">
+            <div class="timer-display idle" id="timerDisplay">25:00</div>
+          </div>
+        </div>
+
+        <div class="timer-setup" id="timerSetup">
+          <div class="custom-duration-wrap">
+            <span>Duration:</span>
+            <input type="number" id="customMinutes" value="25" min="1" max="120">
+            <span>min</span>
+          </div>
+          <button class="timer-preset active" onclick="setPreset(this, 25)">25m</button>
+          <button class="timer-preset" onclick="setPreset(this, 45)">45m</button>
+          <button class="timer-preset" onclick="setPreset(this, 60)">60m</button>
+        </div>
+
+        <div class="timer-controls">
+          <button class="btn-timer start" id="btnStart" onclick="startSession()">▶ Start Focus</button>
+          <button class="btn-timer pause" id="btnPause" onclick="pauseSession()" style="display:none;">⏸ Pause</button>
+          <button class="btn-timer stop" id="btnStop" onclick="stopSession()" style="display:none;">■ End</button>
+        </div>
+
+        <div class="locked-banner" id="lockedBanner">
+          <span>🔒</span> Session active — editing is locked
+        </div>
+      </div>
+
+      <!-- PUNISHMENTS -->
+      <div class="card-section">
+        <div class="section-title">
+          🎡 Punishment Wheel
+          <span class="badge" id="punishCount">0</span>
+        </div>
+
+        <div class="punishments-grid" id="punishmentsGrid">
+          <div class="empty-state" style="grid-column:1/-1">
+            <span class="icon">🎰</span>
+            No punishments yet. Add some spice!
+          </div>
+        </div>
+
+        <div class="add-punishment" id="addPunishWrap">
+          <input type="text" id="punishInput" placeholder="e.g. Do 20 push-ups" maxlength="50">
+          <button class="btn-add" onclick="addPunishment()">Add</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-tabs">
+        <div class="sidebar-tab active" onclick="switchTab('chat')" id="tab-chat">💬 Chat</div>
+        <div class="sidebar-tab" onclick="switchTab('leaderboard')" id="tab-leaderboard">💀 Losers</div>
+      </div>
+
+      <!-- CHAT PANEL -->
+      <div class="sidebar-panel active" id="panel-chat">
+        <div class="chat-messages" id="chatMessages">
+          <div class="chat-msg system">
+            <div class="chat-bubble">Room created. You're the host! 👑</div>
+          </div>
+        </div>
+        <div class="chat-input-wrap">
+          <input type="text" id="chatInput" placeholder="Send a message..." maxlength="200"
+            onkeydown="if(event.key==='Enter') sendMessage()">
+          <button class="btn-send" onclick="sendMessage()">↑</button>
+        </div>
+      </div>
+
+      <!-- LEADERBOARD PANEL -->
+      <div class="sidebar-panel" id="panel-leaderboard">
+        <div class="leaderboard" id="leaderboard"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WHEEL MODAL -->
+<div class="modal-overlay" id="wheelModal">
+  <div class="wheel-modal">
+    <div class="wheel-title">😈 YOU FAILED!</div>
+    <div class="wheel-sub" id="failedUserName">Spinning the wheel of shame...</div>
+
+    <div class="wheel-canvas-wrap">
+      <div class="wheel-pointer"></div>
+      <canvas id="wheelCanvas" width="260" height="260"></canvas>
+    </div>
+
+    <div class="wheel-result" id="wheelResult">
+      <span style="color: var(--muted); font-size: 12px;">Spinning...</span>
+    </div>
+
+    <button class="btn btn-primary" id="btnSpin" onclick="spinWheel()">🎡 SPIN!</button>
+    <button class="btn btn-secondary" onclick="closeWheel()" style="margin-top:10px; width:100%;">
+      Accept Punishment & Continue
+    </button>
+  </div>
+</div>
+
+<script type="module">
+// =============================================
+// FIREBASE SETUP
+// =============================================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, get, onValue, push, remove, onDisconnect, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB_W9warBbIRzlsV3Oh-WTlejAIP2wApYE",
+  authDomain: "fockusmockus-960da.firebaseapp.com",
+  databaseURL: "https://fockusmockus-960da-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "fockusmockus-960da",
+  storageBucket: "fockusmockus-960da.firebasestorage.app",
+  messagingSenderId: "423182002618",
+  appId: "1:423182002618:android:4c49c961ff27b9b2005583"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// =============================================
+// STATE
+// =============================================
+const STATE = {
+  user: { name: '', id: '', color: 0 },
+  room: { id: '', host: '' },
+  timer: { running: false, paused: false, seconds: 0, total: 0, interval: null },
+  punishments: [],
+  peers: {},
+  messages: [],
+  myFails: 0,
+  mySessions: 0,
+  myFocusSeconds: 0,
+  sessionLocked: false,
+  isSpinning: false,
+  sessionStarted: false,
+  listeners: []
+};
+
+const COLORS = [
+  { av: 'av-1', hex: '#a78bfa' },
+  { av: 'av-2', hex: '#ff4d6d' },
+  { av: 'av-3', hex: '#06d6a0' },
+  { av: 'av-4', hex: '#ffd60a' },
+  { av: 'av-5', hex: '#60a5fa' }
+];
+
+const BOT_NAMES = ['FocusFiend', 'SlackMaster', 'DeadlineKing', 'ZonedIn_Zara'];
+const BOT_TAUNTS = [
+  'lmaooo get wrecked 😂',
+  'skill issue tbh',
+  'TOUCH GRASS CHALLENGE FAILED 💀',
+  'classic distraction again omg',
+  'bro really said "just 5 mins" 🙄',
+  'not surprised honestly lol',
+  'the wheel doesn\'t lie bestie',
+  'focus diff = 0 🚫',
+];
+
+const DEFAULT_PUNISHMENTS = [
+  '20 push-ups 💪',
+  'No phone for 10 mins 📵',
+  'Text your crush 😳',
+  'Do a silly dance 💃',
+  'Drink a glass of water 💧',
+  'Compliment 3 people 🌸'
+];
+
+// =============================================
+// ROOM MANAGEMENT
+// =============================================
+function generateRoomId() {
+  const words = ['chaos', 'grind', 'hustle', 'vibe', 'focus', 'zone', 'brain', 'fire'];
+  const w1 = words[Math.floor(Math.random() * words.length)];
+  const w2 = words[Math.floor(Math.random() * words.length)];
+  const num = Math.floor(Math.random() * 99) + 1;
+  return `${w1}-${w2}-${num}`;
+}
+
+function createRoom() {
+  document.getElementById('inputRoom').value = generateRoomId();
+}
+
+async function joinRoom() {
+  const name = document.getElementById('inputName').value.trim();
+  const roomId = document.getElementById('inputRoom').value.trim();
+
+  if (!name) { flashInput('inputName'); return; }
+  if (!roomId) { flashInput('inputRoom'); return; }
+
+  STATE.user.name = name;
+  STATE.user.id = 'user_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+  STATE.user.color = Math.floor(Math.random() * 5);
+  STATE.room.id = roomId;
+
+  // Check if room exists, get punishments if so
+  const roomRef = ref(db, `rooms/${roomId}`);
+  const snap = await get(roomRef);
+  if (snap.exists() && snap.val().punishments) {
+    STATE.punishments = snap.val().punishments;
+  } else {
+    STATE.punishments = [...DEFAULT_PUNISHMENTS];
+    await set(ref(db, `rooms/${roomId}/punishments`), STATE.punishments);
+  }
+
+  // Register presence
+  const userRef = ref(db, `rooms/${roomId}/users/${STATE.user.id}`);
+  await set(userRef, {
+    name: STATE.user.name,
+    color: STATE.user.color,
+    fails: 0,
+    joinedAt: serverTimestamp()
+  });
+  onDisconnect(userRef).remove();
+
+  // Switch screens
+  document.getElementById('screen-landing').classList.remove('active');
+  document.getElementById('screen-app').classList.add('active');
+  document.getElementById('roomBadge').textContent = roomId.toUpperCase().slice(0, 12);
+
+  renderPunishments();
+
+  // Listen for users
+  listenUsers(roomId);
+  // Listen for timer
+  listenTimer(roomId);
+  // Listen for fail events
+  listenFailEvents(roomId);
+  // Listen for chat
+  listenChat(roomId);
+
+  // Send join message
+  await pushChatMsg(`${name} joined the room 🎯`, '__system__');
+}
+
+async function leaveRoom() {
+  if (STATE.timer.interval) clearInterval(STATE.timer.interval);
+
+  // Remove user from Firebase
+  if (STATE.room.id && STATE.user.id) {
+    await pushChatMsg(`${STATE.user.name} left the room 👋`, '__system__');
+    await remove(ref(db, `rooms/${STATE.room.id}/users/${STATE.user.id}`));
+  }
+
+  // Detach all listeners
+  STATE.listeners.forEach(unsub => unsub());
+  STATE.listeners = [];
+
+  document.getElementById('screen-app').classList.remove('active');
+  document.getElementById('screen-landing').classList.add('active');
+  STATE.timer = { running: false, paused: false, seconds: 0, total: 0, interval: null };
+  STATE.punishments = [];
+  STATE.peers = {};
+  STATE.messages = [];
+  STATE.myFails = 0;
+  STATE.mySessions = 0;
+  STATE.myFocusSeconds = 0;
+  STATE.sessionLocked = false;
+  STATE.sessionStarted = false;
+  document.getElementById('chatMessages').innerHTML = '';
+}
+
+function flashInput(id) {
+  const el = document.getElementById(id);
+  el.style.borderColor = 'var(--accent)';
+  el.classList.add('shake');
+  setTimeout(() => { el.style.borderColor = ''; el.classList.remove('shake'); }, 600);
+}
+
+// =============================================
+// FIREBASE LISTENERS
+// =============================================
+function listenUsers(roomId) {
+  const usersRef = ref(db, `rooms/${roomId}/users`);
+  const unsub = onValue(usersRef, (snap) => {
+    const users = snap.val() || {};
+    STATE.peers = {};
+    Object.entries(users).forEach(([id, data]) => {
+      if (id !== STATE.user.id) {
+        STATE.peers[id] = { id, name: data.name, color: data.color, fails: data.fails || 0 };
+      } else {
+        STATE.myFails = data.fails || STATE.myFails;
+        document.getElementById('statFails').textContent = STATE.myFails;
+      }
+    });
+    updateOnlineCount();
+    renderLeaderboard();
+  });
+  STATE.listeners.push(unsub);
+}
+
+function listenTimer(roomId) {
+  const timerRef = ref(db, `rooms/${roomId}/timer`);
+  const unsub = onValue(timerRef, (snap) => {
+    const t = snap.val();
+    if (!t) return;
+
+    // Only sync if WE didn't start it (avoid double-running for the host)
+    if (t.running && !STATE.timer.running && !STATE.sessionStarted) {
+      const elapsed = Math.floor((Date.now() - t.startedAt) / 1000);
+      const secondsLeft = Math.max(t.total - elapsed, 0);
+
+      STATE.timer.total = t.total;
+      STATE.timer.seconds = secondsLeft;
+      STATE.timer.running = true;
+      STATE.timer.paused = false;
+      STATE.sessionLocked = true;
+      STATE.sessionStarted = true;
+      STATE.mySessions++;
+
+      document.getElementById('statSessions').textContent = STATE.mySessions;
+      document.getElementById('btnStart').style.display = 'none';
+      document.getElementById('btnPause').style.display = 'inline-block';
+      document.getElementById('btnStop').style.display = 'inline-block';
+      document.getElementById('timerSetup').style.display = 'none';
+      document.getElementById('lockedBanner').classList.add('active');
+      document.getElementById('addPunishWrap').style.opacity = '0.4';
+      document.getElementById('addPunishWrap').style.pointerEvents = 'none';
+
+      updateTimerDisplay();
+      startTimerInterval();
+      startDistractDetect();
+
+    } else if (t.paused && STATE.timer.running) {
+      // Host paused — pause for everyone
+      STATE.timer.seconds = t.secondsLeft || STATE.timer.seconds;
+      STATE.timer.paused = true;
+      STATE.timer.running = false;
+      clearInterval(STATE.timer.interval);
+      document.getElementById('btnPause').textContent = '▶ Resume';
+      document.getElementById('timerDisplay').className = 'timer-display paused';
+      document.getElementById('timerLabel').textContent = 'PAUSED';
+
+    } else if (!t.paused && STATE.timer.paused) {
+      // Host resumed
+      STATE.timer.paused = false;
+      STATE.timer.running = true;
+      if (t.secondsLeft) STATE.timer.seconds = t.secondsLeft;
+      startTimerInterval();
+      document.getElementById('btnPause').textContent = '⏸ Pause';
+      document.getElementById('timerDisplay').className = 'timer-display running';
+
+    } else if (!t.running && STATE.timer.running) {
+      // Host stopped
+      stopSession();
+    }
+  });
+  STATE.listeners.push(unsub);
+}
+
+function listenFailEvents(roomId) {
+  const failRef = ref(db, `rooms/${roomId}/failEvent`);
+  let lastFailTs = 0;
+  const unsub = onValue(failRef, (snap) => {
+    const fail = snap.val();
+    if (!fail || fail.ts <= lastFailTs) return;
+    lastFailTs = fail.ts;
+
+    // Show EVERYONE the fail popup with the name
+    const alert = document.getElementById('distractionAlert');
+    alert.textContent = `😱 ${fail.name} GOT DISTRACTED!`;
+    alert.classList.add('show');
+    setTimeout(() => {
+      alert.classList.remove('show');
+      alert.textContent = '⚠️ DISTRACTION DETECTED — SPIN THE WHEEL!';
+    }, 3500);
+
+    // ONLY the person who failed sees the wheel
+    if (fail.userId === STATE.user.id && STATE.punishments.length > 0) {
+      setTimeout(() => openWheel(), 1200);
+    }
+  });
+  STATE.listeners.push(unsub);
+}
+
+function listenChat(roomId) {
+  const chatRef = ref(db, `rooms/${roomId}/chat`);
+  let isFirst = true;
+  const unsub = onValue(chatRef, (snap) => {
+    if (isFirst) {
+      // On first load, render all existing messages
+      isFirst = false;
+      document.getElementById('chatMessages').innerHTML = '';
+      const msgs = snap.val();
+      if (msgs) {
+        Object.values(msgs).sort((a,b) => a.ts - b.ts).forEach(m => renderChatMsg(m));
+      }
+      return;
+    }
+    // After first load, only render new messages
+    const msgs = snap.val();
+    if (!msgs) return;
+    const all = Object.values(msgs).sort((a,b) => a.ts - b.ts);
+    const last = all[all.length - 1];
+    if (last) renderChatMsg(last);
+  });
+  STATE.listeners.push(unsub);
+}
+
+function renderChatMsg(m) {
+  if (m.type === '__system__') {
+    appendSystemMsg(m.text);
+  } else if (m.userId === STATE.user.id) {
+    appendMyMsgDirect(m.text);
+  } else {
+    const peer = { name: m.name, color: m.color };
+    appendPeerMsg(peer, m.text);
+  }
+}
+
+async function pushChatMsg(text, type) {
+  const chatRef = ref(db, `rooms/${STATE.room.id}/chat`);
+  await push(chatRef, {
+    text,
+    type: type || 'msg',
+    userId: STATE.user.id,
+    name: STATE.user.name,
+    color: STATE.user.color,
+    ts: Date.now()
+  });
+}
+
+function updateOnlineCount() {
+  const total = 1 + Object.keys(STATE.peers).length;
+  document.getElementById('onlineCount').textContent = `${total} online`;
+}
+
+// =============================================
+// TIMER
+// =============================================
+function setPreset(btn, minutes) {
+  document.querySelectorAll('.timer-preset').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('customMinutes').value = minutes;
+}
+
+function startSession() {
+  const mins = parseInt(document.getElementById('customMinutes').value) || 25;
+  STATE.timer.total = mins * 60;
+  STATE.timer.seconds = mins * 60;
+  STATE.timer.running = true;
+  STATE.timer.paused = false;
+  STATE.sessionLocked = true;
+  STATE.sessionStarted = true;
+  STATE.mySessions++;
+
+  document.getElementById('statSessions').textContent = STATE.mySessions;
+  document.getElementById('btnStart').style.display = 'none';
+  document.getElementById('btnPause').style.display = 'inline-block';
+  document.getElementById('btnStop').style.display = 'inline-block';
+  document.getElementById('timerSetup').style.display = 'none';
+  document.getElementById('lockedBanner').classList.add('active');
+  document.getElementById('addPunishWrap').style.opacity = '0.4';
+  document.getElementById('addPunishWrap').style.pointerEvents = 'none';
+
+  // Sync timer to Firebase so everyone sees it
+  set(ref(db, `rooms/${STATE.room.id}/timer`), {
+    running: true,
+    paused: false,
+    total: STATE.timer.total,
+    startedAt: Date.now(),
+    startedBy: STATE.user.name
+  });
+
+  updateTimerDisplay();
+  startTimerInterval();
+  startDistractDetect();
+
+  pushChatMsg(`${STATE.user.name} started a ${mins}min focus session 🎯`, '__system__');
+}
+
+function pauseSession() {
+  if (STATE.timer.paused) {
+    STATE.timer.paused = false;
+    STATE.timer.running = true;
+    startTimerInterval();
+    document.getElementById('btnPause').textContent = '⏸ Pause';
+    document.getElementById('timerDisplay').className = 'timer-display running';
+    // Sync resume
+    set(ref(db, `rooms/${STATE.room.id}/timer/paused`), false);
+    set(ref(db, `rooms/${STATE.room.id}/timer/resumedAt`), Date.now());
+    set(ref(db, `rooms/${STATE.room.id}/timer/secondsLeft`), STATE.timer.seconds);
+  } else {
+    STATE.timer.paused = true;
+    STATE.timer.running = false;
+    clearInterval(STATE.timer.interval);
+    document.getElementById('btnPause').textContent = '▶ Resume';
+    document.getElementById('timerDisplay').className = 'timer-display paused';
+    document.getElementById('timerLabel').textContent = 'PAUSED';
+    // Sync pause
+    set(ref(db, `rooms/${STATE.room.id}/timer/paused`), true);
+    set(ref(db, `rooms/${STATE.room.id}/timer/secondsLeft`), STATE.timer.seconds);
+  }
+}
+
+function stopSession() {
+  clearInterval(STATE.timer.interval);
+  const elapsed = STATE.timer.total - STATE.timer.seconds;
+  STATE.myFocusSeconds += elapsed;
+
+  const mins = Math.floor(STATE.myFocusSeconds / 60);
+  document.getElementById('statFocus').textContent = mins + 'm';
+
+  STATE.timer.running = false;
+  STATE.timer.paused = false;
+  STATE.sessionLocked = false;
+
+  // Clear timer in Firebase
+  set(ref(db, `rooms/${STATE.room.id}/timer`), { running: false, paused: false });
+
+  document.getElementById('btnStart').style.display = 'inline-block';
+  document.getElementById('btnPause').style.display = 'none';
+  document.getElementById('btnStop').style.display = 'none';
+  document.getElementById('timerSetup').style.display = 'flex';
+  document.getElementById('lockedBanner').classList.remove('active');
+  document.getElementById('addPunishWrap').style.opacity = '';
+  document.getElementById('addPunishWrap').style.pointerEvents = '';
+
+  const mins2 = parseInt(document.getElementById('customMinutes').value) || 25;
+  document.getElementById('timerDisplay').textContent = formatTime(mins2 * 60);
+  document.getElementById('timerDisplay').className = 'timer-display idle';
+  document.getElementById('timerLabel').textContent = 'READY TO FOCUS';
+  document.getElementById('timerArc').style.strokeDashoffset = '0';
+  document.getElementById('btnPause').textContent = '⏸ Pause';
+
+  pushChatMsg(`Session ended. Well done team! 🏁`, '__system__');
+}
+
+function startTimerInterval() {
+  clearInterval(STATE.timer.interval);
+  STATE.timer.interval = setInterval(() => {
+    if (!STATE.timer.running || STATE.timer.paused) return;
+    STATE.timer.seconds--;
+    updateTimerDisplay();
+
+    if (STATE.timer.seconds <= 0) {
+      clearInterval(STATE.timer.interval);
+      sessionComplete();
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const s = STATE.timer.seconds;
+  const t = STATE.timer.total;
+  const disp = document.getElementById('timerDisplay');
+  const arc = document.getElementById('timerArc');
+  const label = document.getElementById('timerLabel');
+
+  disp.textContent = formatTime(s);
+
+  const progress = 1 - (s / t);
+  const circumference = 2 * Math.PI * 88;
+  arc.style.strokeDashoffset = circumference * (1 - progress);
+
+  const pct = Math.round((1 - s / t) * 100);
+
+  if (s <= 60) {
+    disp.className = 'timer-display danger';
+    arc.style.stroke = 'var(--accent)';
+    label.textContent = `FINAL STRETCH — ${pct}%`;
+  } else if (s <= t * 0.25) {
+    disp.className = 'timer-display running';
+    arc.style.stroke = 'var(--warning)';
+    label.textContent = `ALMOST THERE — ${pct}%`;
+  } else {
+    disp.className = 'timer-display running';
+    arc.style.stroke = 'var(--accent3)';
+    label.textContent = `IN THE ZONE — ${pct}%`;
+  }
+}
+
+function formatTime(seconds) {
+  const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+  const s = (seconds % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+}
+
+function sessionComplete() {
+  STATE.timer.running = false;
+  const label = document.getElementById('timerLabel');
+  label.textContent = '🎉 SESSION COMPLETE!';
+  document.getElementById('timerDisplay').textContent = '00:00';
+  fireConfetti();
+  pushChatMsg('🎉 Session complete! Amazing focus everyone!', '__system__');
+
+  setTimeout(() => stopSession(), 2500);
+}
+
+// =============================================
+// DISTRACTION DETECTION
+// =============================================
+function startDistractDetect() {
+  document.addEventListener('visibilitychange', onVisibilityChange);
+  window.addEventListener('blur', onWindowBlur);
+}
+
+function stopDistractDetect() {
+  document.removeEventListener('visibilitychange', onVisibilityChange);
+  window.removeEventListener('blur', onWindowBlur);
+}
+
+let blurTimeout = null;
+
+function onVisibilityChange() {
+  if (document.hidden && STATE.timer.running && !STATE.timer.paused) {
+    triggerDistraction();
+  }
+}
+
+function onWindowBlur() {
+  if (!STATE.timer.running || STATE.timer.paused) return;
+  blurTimeout = setTimeout(() => {
+    if (!document.hasFocus() && STATE.timer.running) {
+      triggerDistraction();
+    }
+  }, 1500);
+}
+
+function triggerDistraction() {
+  if (!STATE.timer.running || STATE.timer.paused) return;
+
+  STATE.myFails++;
+  document.getElementById('statFails').textContent = STATE.myFails;
+
+  // Sync fails to Firebase
+  if (STATE.room.id && STATE.user.id) {
+    set(ref(db, `rooms/${STATE.room.id}/users/${STATE.user.id}/fails`), STATE.myFails);
+  }
+
+  // Push fail event so everyone sees popup (wheel only shows for this user via listenFailEvents)
+  set(ref(db, `rooms/${STATE.room.id}/failEvent`), {
+    userId: STATE.user.id,
+    name: STATE.user.name,
+    fails: STATE.myFails,
+    ts: Date.now()
+  });
+
+  // Notify chat
+  pushChatMsg(`😱 ${STATE.user.name} got DISTRACTED! Fails: ${STATE.myFails}`, '__system__');
+
+  renderLeaderboard();
+}
+
+// =============================================
+// PUNISHMENTS
+// =============================================
+function addPunishment() {
+  if (STATE.sessionLocked) return;
+  const input = document.getElementById('punishInput');
+  const val = input.value.trim();
+  if (!val) return;
+  STATE.punishments.push(val);
+  input.value = '';
+  renderPunishments();
+  // Sync to Firebase
+  if (STATE.room.id) {
+    set(ref(db, `rooms/${STATE.room.id}/punishments`), STATE.punishments);
+  }
+}
+
+function removePunishment(idx) {
+  if (STATE.sessionLocked) return;
+  STATE.punishments.splice(idx, 1);
+  renderPunishments();
+  // Sync to Firebase
+  if (STATE.room.id) {
+    set(ref(db, `rooms/${STATE.room.id}/punishments`), STATE.punishments);
+  }
+}
+
+function renderPunishments() {
+  const grid = document.getElementById('punishmentsGrid');
+  document.getElementById('punishCount').textContent = STATE.punishments.length;
+
+  if (!STATE.punishments.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <span class="icon">🎰</span>No punishments yet. Add some spice!</div>`;
+    return;
+  }
+
+  grid.innerHTML = STATE.punishments.map((p, i) => `
+    <div class="punishment-chip">
+      <span style="font-size:12px; flex:1;">${p}</span>
+      <button class="del-btn" onclick="removePunishment(${i})">✕</button>
+    </div>
+  `).join('');
+}
+
+// =============================================
+// WHEEL
+// =============================================
+let wheelAngle = 0;
+let wheelSpinning = false;
+
+function openWheel() {
+  document.getElementById('wheelModal').classList.add('active');
+  document.getElementById('wheelResult').innerHTML = '<span style="color: var(--muted); font-size: 12px;">Spin to reveal your fate...</span>';
+  document.getElementById('btnSpin').disabled = false;
+  drawWheel(wheelAngle);
+}
+
+function closeWheel() {
+  document.getElementById('wheelModal').classList.remove('active');
+}
+
+function drawWheel(rotation) {
+  const canvas = document.getElementById('wheelCanvas');
+  const ctx = canvas.getContext('2d');
+  const cx = 130, cy = 130, r = 120;
+  const punishments = STATE.punishments.length ? STATE.punishments : ['Nothing! Lucky you 🍀'];
+  const n = punishments.length;
+  const arc = (2 * Math.PI) / n;
+
+  const wheelColors = ['#7c3aed','#ff4d6d','#06d6a0','#ffd60a','#3b82f6','#f97316','#ec4899','#84cc16'];
+
+  ctx.clearRect(0, 0, 260, 260);
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(rotation);
+
+  for (let i = 0; i < n; i++) {
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.arc(0, 0, r, i * arc, (i + 1) * arc);
+    ctx.closePath();
+    ctx.fillStyle = wheelColors[i % wheelColors.length];
+    ctx.fill();
+    ctx.strokeStyle = '#0a0a0f';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.save();
+    ctx.rotate(i * arc + arc / 2);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 10px Space Mono';
+    ctx.textAlign = 'right';
+    const text = punishments[i].length > 18 ? punishments[i].slice(0,16)+'…' : punishments[i];
+    ctx.fillText(text, r - 10, 4);
+    ctx.restore();
+  }
+
+  // Center circle
+  ctx.beginPath();
+  ctx.arc(0, 0, 18, 0, 2 * Math.PI);
+  ctx.fillStyle = '#0a0a0f';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function spinWheel() {
+  if (wheelSpinning) return;
+  const punishments = STATE.punishments.length ? STATE.punishments : ['Nothing! Lucky you 🍀'];
+  const n = punishments.length;
+
+  wheelSpinning = true;
+  document.getElementById('btnSpin').disabled = true;
+  document.getElementById('wheelResult').innerHTML = '<span style="color: var(--muted); font-size: 12px;">Spinning... 🎡</span>';
+
+  const extraSpins = (5 + Math.floor(Math.random() * 5)) * 2 * Math.PI;
+  const selectedIdx = Math.floor(Math.random() * n);
+  const arc = (2 * Math.PI) / n;
+  const targetAngle = -(selectedIdx * arc + arc / 2 - Math.PI / 2) + extraSpins;
+
+  const duration = 4000;
+  const start = performance.now();
+  const startAngle = wheelAngle;
+
+  function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
+
+  function animate(now) {
+    const elapsed = now - start;
+    const t = Math.min(elapsed / duration, 1);
+    wheelAngle = startAngle + targetAngle * easeOut(t);
+    drawWheel(wheelAngle);
+
+    if (t < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      wheelSpinning = false;
+      const result = punishments[selectedIdx];
+      document.getElementById('wheelResult').innerHTML = `<span>🎯 ${result}</span>`;
+      pushChatMsg(`Punishment for ${STATE.user.name}: "${result}"`, '__system__');
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+
+// =============================================
+// CHAT
+// =============================================
+function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  pushChatMsg(msg, 'msg');
+}
+
+function appendMyMsgDirect(text) {
+  const c = COLORS[STATE.user.color];
+  const initials = STATE.user.name.slice(0,2).toUpperCase();
+  const wrap = document.createElement('div');
+  wrap.className = 'chat-msg mine';
+  wrap.innerHTML = `
+    <div class="chat-avatar ${c.av}">${initials}</div>
+    <div>
+      <div class="chat-sender">you</div>
+      <div class="chat-bubble">${escapeHtml(text)}</div>
+    </div>`;
+  appendChatNode(wrap);
+}
+
+function appendMyMsg(text) {
+  appendMyMsgDirect(text);
+}
+
+function appendPeerMsg(peer, text) {
+  const c = COLORS[peer.color];
+  const initials = peer.name.slice(0,2).toUpperCase();
+  const wrap = document.createElement('div');
+  wrap.className = 'chat-msg';
+  wrap.innerHTML = `
+    <div class="chat-avatar ${c.av}">${initials}</div>
+    <div>
+      <div class="chat-sender">${escapeHtml(peer.name)}</div>
+      <div class="chat-bubble">${escapeHtml(text)}</div>
+    </div>`;
+  appendChatNode(wrap);
+}
+
+function appendSystemMsg(text) {
+  const wrap = document.createElement('div');
+  wrap.className = 'chat-msg system';
+  wrap.innerHTML = `<div class="chat-bubble">${escapeHtml(text)}</div>`;
+  appendChatNode(wrap);
+}
+
+function appendChatNode(node) {
+  const container = document.getElementById('chatMessages');
+  container.appendChild(node);
+  container.scrollTop = container.scrollHeight;
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// =============================================
+// LEADERBOARD
+// =============================================
+function renderLeaderboard() {
+  const board = document.getElementById('leaderboard');
+
+  // Build entries
+  let entries = [
+    { name: STATE.user.name, color: STATE.user.color, fails: STATE.myFails, isMe: true }
+  ];
+
+  Object.values(STATE.peers).forEach(p => {
+    entries.push({ name: p.name, color: p.color, fails: p.fails, isMe: false });
+  });
+
+  // Sort by fails desc (most fails = most shameful)
+  entries.sort((a, b) => b.fails - a.fails);
+
+  const rankIcons = ['gold', 'silver', 'bronze'];
+
+  board.innerHTML = entries.map((e, i) => {
+    const c = COLORS[e.color];
+    const initials = e.name.slice(0,2).toUpperCase();
+    return `
+      <div class="lb-row ${e.isMe ? 'highlighted' : ''}">
+        <div class="lb-rank ${rankIcons[i] || ''}">${i === 0 ? '🏆' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i+1}`}</div>
+        <div class="lb-avatar ${c.av}">${initials}</div>
+        <div style="flex:1;">
+          <div class="lb-name">${escapeHtml(e.name)}${e.isMe ? '<span class="lb-you">you</span>' : ''}</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="lb-fails">${e.fails}</div>
+          <div class="lb-fails-label">fails</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// =============================================
+// TABS
+// =============================================
+function switchTab(tab) {
+  ['chat','leaderboard'].forEach(t => {
+    document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
+    document.getElementById(`panel-${t}`).classList.toggle('active', t === tab);
+  });
+}
+
+// =============================================
+// CONFETTI
+// =============================================
+function fireConfetti() {
+  const canvas = document.getElementById('confettiCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const particles = Array.from({length: 80}, () => ({
+    x: Math.random() * canvas.width,
+    y: -10,
+    vy: 2 + Math.random() * 4,
+    vx: (Math.random() - 0.5) * 3,
+    rotation: Math.random() * 360,
+    rotV: (Math.random() - 0.5) * 10,
+    w: 8 + Math.random() * 8,
+    h: 5 + Math.random() * 5,
+    color: ['#ff4d6d','#7c3aed','#06d6a0','#ffd60a','#60a5fa'][Math.floor(Math.random()*5)]
+  }));
+
+  let frame = 0;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      p.y += p.vy;
+      p.x += p.vx;
+      p.rotation += p.rotV;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rotation * Math.PI / 180);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+      ctx.restore();
+    });
+    frame++;
+    if (frame < 120) requestAnimationFrame(draw);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  draw();
+}
+
+// =============================================
+// INIT
+// =============================================
+document.getElementById('customMinutes').addEventListener('input', function() {
+  const m = parseInt(this.value) || 25;
+  if (!STATE.timer.running) {
+    document.getElementById('timerDisplay').textContent = formatTime(m * 60);
+    document.getElementById('timerArc').style.strokeDashoffset = '0';
+  }
+  document.querySelectorAll('.timer-preset').forEach(b => b.classList.remove('active'));
+});
+
+document.getElementById('punishInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addPunishment();
+});
+
+drawWheel(0);
+
+// Expose functions to window (required for onclick handlers in ES modules)
+// =============================================
+// VIDEO CALL (Jitsi Meet — free, no login)
+// =============================================
+function startVideoCall() {
+  const roomId = STATE.room.id.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+  const jitsiRoom = 'fockusmockus-' + roomId;
+  document.getElementById('videoRoomLabel').textContent = STATE.room.id.toUpperCase();
+  document.getElementById('videoFrame').src = `https://meet.jit.si/${jitsiRoom}`;
+  document.getElementById('videoOverlay').style.display = 'flex';
+  pushChatMsg(`${STATE.user.name} started a video call! Click 📹 Video to join 🎥`, '__system__');
+}
+
+function closeVideoCall() {
+  document.getElementById('videoOverlay').style.display = 'none';
+  document.getElementById('videoFrame').src = '';
+}
+
+window.startVideoCall = startVideoCall;
+window.closeVideoCall = closeVideoCall;
+window.createRoom = createRoom;
+window.leaveRoom = leaveRoom;
+window.startSession = startSession;
+window.pauseSession = pauseSession;
+window.stopSession = stopSession;
+window.sendMessage = sendMessage;
+window.addPunishment = addPunishment;
+window.removePunishment = removePunishment;
+window.spinWheel = spinWheel;
+window.closeWheel = closeWheel;
+window.openWheel = openWheel;
+window.switchTab = switchTab;
+window.setPreset = setPreset;
+</script>
+</body>
+</html>
